@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nevix - 엔트리 AI 어시스턴트</title>
+  <link rel="icon" href="icon.png" type="image/png" />
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+  <style>
+    /* =========================================
+       1. 라이트 모드 디자인 시스템 & 변수
+    ========================================= */
+    :root {
+      --primary-grad: linear-gradient(135deg, #05ce91 0%, #2563eb 50%, #9333ea 100%);
+      --accent-grad: linear-gradient(135deg, #00c689 0%, #3b82f6 100%);
+      --amber-grad: linear-gradient(90deg, #f59e0b, #d97706);
+
+      --bg-body: #f8fafc;
+      --bg-white: #ffffff;
+      --bg-card: #ffffff;
+
+      --border-light: #e2e8f0;
+      --border-focus: #cbd5e1;
+
+      --text-main: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #94a3b8;
+
+      --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 24px 48px rgba(15, 23, 42, 0.12);
+
+      --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      word-break: keep-all;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .grad-text {
+      background: var(--primary-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* 은은한 배경 오로라 빛 */
+    .glow-bg {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    /* =========================================
+       2. 헤더
+    ========================================= */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 72px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-sub);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: #2563eb;
+    }
+
+    .btn-cta {
+      background: var(--primary-grad);
+      color: #ffffff;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(147, 51, 234, 0.35);
+    }
+
+    /* =========================================
+       3. 히어로 섹션
+    ========================================= */
+    .hero {
+      position: relative;
+      padding: 160px 0 90px 0;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      border-radius: 30px;
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      font-size: 14px;
+      font-weight: 700;
+      color: #2563eb;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .hero-badge img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .hero h1 {
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .hero p {
+      font-size: 19px;
+      color: var(--text-sub);
+      max-width: 720px;
+      margin: 0 auto 40px auto;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 60px;
+    }
+
+    .btn-primary {
+      background: var(--primary-grad);
+      color: #ffffff;
+      padding: 15px 36px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 17px;
+      text-decoration: none;
+      transition: all 0.25s;
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(147, 51, 234, 0.35);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--text-main);
+      padding: 15px 32px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 17px;
+      text-decoration: none;
+      border: 1px solid var(--border-light);
+      transition: all 0.25s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+    }
+
+    .browser-mockup {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .browser-bar {
+      background: #f1f5f9;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot-r { background: #ff5f56; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #27c93f; }
+
+    .browser-url {
+      margin-left: 12px;
+      background: #ffffff;
+      padding: 4px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: monospace;
+      border: 1px solid var(--border-light);
+    }
+
+    .hero-screenshot {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* =========================================
+       4. 작동 GIF 데모 섹션
+    ========================================= */
+    .video-demo {
+      padding: 120px 0;
+      background: #ffffff;
+      position: relative;
+    }
+
+    .video-demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .video-text h2 {
+      font-size: 38px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+    }
+
+    .video-text p {
+      font-size: 17px;
+      color: var(--text-sub);
+      margin-bottom: 30px;
+      line-height: 1.7;
+    }
+
+    .video-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .video-points li {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #f8fafc;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text-main);
+    }
+
+    .video-points li span {
+      background: var(--primary-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 20px;
+    }
+
+    .gif-style-card {
+      max-width: 480px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-lg);
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .gif-style-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      display: block;
+    }
+
+    /* =========================================
+       5. 주요 특징 섹션
+    ========================================= */
+    .features {
+      padding: 100px 0;
+      position: relative;
+      background: var(--bg-body);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-header h2 {
+      font-size: 38px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+      color: var(--text-main);
+    }
+
+    .section-header p {
+      font-size: 17px;
+      color: var(--text-sub);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      padding: 36px 28px;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card:hover {
+      border-color: #9333ea;
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-icon-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: #eff6ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 24px;
+    }
+
+    .card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-main);
+    }
+
+    .card p {
+      color: var(--text-sub);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* =========================================
+       6. 사용 방법 섹션
+    ========================================= */
+    .steps-section {
+      padding: 120px 0;
+      background: #ffffff;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 50px;
+    }
+
+    .step-card {
+      background: var(--bg-body);
+      border: 1px solid var(--border-light);
+      border-radius: 18px;
+      padding: 32px 24px;
+    }
+
+    .step-badge {
+      font-size: 12px;
+      font-weight: 800;
+      color: #2563eb;
+      background: #dbeafe;
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .step-card h4 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .step-card p {
+      color: var(--text-sub);
+      font-size: 15px;
+    }
+
+    /* =========================================
+       7. CTA 및 푸터
+    ========================================= */
+    .cta-banner {
+      padding: 80px 0 100px 0;
+      background: var(--bg-body);
+    }
+
+    .cta-box {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: 28px;
+      padding: 60px;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    footer {
+      padding: 40px 0;
+      background: #ffffff;
+      border-top: 1px solid var(--border-light);
+      text-align: center;
+      color: var(--text-sub);
+      font-size: 14px;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--text-main);
+    }
+
+    .footer-logo-img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* 모바일 반응형 */
+    @media (max-width: 900px) {
+      .hero h1 { font-size: 36px; }
+      .grid-3, .steps-grid { grid-template-columns: 1fr; }
+      .video-demo-grid { grid-template-columns: 1fr; text-align: center; }
+      .video-points li { justify-content: center; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-bg" style="width: 600px; height: 600px; background: rgba(37, 99, 235, 0.08); top: 50px; left: 50%; transform: translateX(-50%);"></div>
+  <div class="glow-bg" style="width: 450px; height: 450px; background: rgba(147, 51, 234, 0.08); top: 700px; right: 5%;"></div>
+
+  <header>
+    <div class="container nav-container">
+      <a href="#" class="logo">
+        <img src="Nevix.png" alt="Nevix 로고" class="logo-img" onerror="this.onerror=null; this.src='icon.png';" />
+        <span>Nevix</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#video-demo">실제 작동</a></li>
+        <li><a href="#features">주요 기능</a></li>
+        <li><a href="#how-to">사용 방법</a></li>
+      </ul>
+      <a href="#" class="btn-cta">
+        <span>Chrome에 추가</span>
+      </a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <img src="icon.png" alt="Nevix" onerror="this.style.display='none'" />
+        <span>엔트리 AI 어시스턴트</span>
+      </div>
+      <h1>엔트리 파이썬 코딩의 모든 순간,<br/><span class="grad-text">Nevix AI</span>가 완벽하게 서포트합니다</h1>
+      <p>
+        엔트리 파이썬 코드 작성 부터 신선한 작품 아이디어 추천까지!<br/>
+        엔트리 워크스페이스에 지능형 AI 어시스턴트를 바로 연결해보세요.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#video-demo" class="btn-primary">핵심 기능 보기</a>
+        <a href="#features" class="btn-secondary">주요 특징 살펴보기</a>
+      </div>
+
+      <div class="browser-mockup">
+        <div class="browser-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span class="browser-url">playentry.org - Nevix Workspace AI Assistant</span>
+        </div>
+        <img src="실제 화면.jpg" alt="Nevix 실제 작동 화면" class="hero-screenshot" onerror="this.onerror=null; this.style.display='none';" />
+      </div>
+    </div>
+  </section>
+
+  <section class="video-demo" id="video-demo">
+    <div class="container">
+      <div class="video-demo-grid">
+        <div class="video-text">
+          <h2>메인에서도 빠르게 접근!<br/><span class="grad-text">모든 엔트리 페이지에서 Nevix 호출</span></h2>
+          <p>
+            오직 엔트리 환경을 위해 특별히 제작된 Nevix의 작동 과정을 직접 눈으로 확인해 보세요.
+            조립소가 아닌 다른 엔트리 페이지에서도 빠르게 접근해 자유롭게 질문을 던질 수 있습니다.
+          </p>
+          <ul class="video-points">
+            <li><span>①</span> 엔트리의 모든 페이지에서 Nevix 호출</li>
+            <li><span>②</span> 만들고 싶은 기능을 자연어로 질문</li>
+            <li><span>③</span> '조립소에 넣기' 클릭으로 즉시 블록 코드 삽입</li>
+          </ul>
+        </div>
+
+        <div class="gif-style-card">
+          <img src="gif.gif" alt="Nevix 작동 GIF" onerror="this.onerror=null; this.src='실제 화면.jpg';" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <h2>왜 <span class="grad-text">Nevix</span>를 선택해야 할까요?</h2>
+        <p>엔트리 코딩 환경에 최적화된 맞춤 기능으로 상상을 코드로 실현합니다.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon-box">🐍</div>
+          <h3>엔트리 파이썬 전용 문법</h3>
+          <p>일반 파이썬이 아닌 `Entry.add_x()`, `when_start()` 등 엔트리 고유 함수와 이벤트 구조에 특화된 정확한 코드만 생성합니다.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon-box">⚡</div>
+          <h3>원클릭으로 블록 코드 삽입</h3>
+          <p>생성된 엔트리 파이썬 코드를 별도 변환 툴 없이, 버튼 한 번으로 블록 코드로 자동 변환되어 조립소에 깔끔하게 추가됩니다.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon-box">💡</div>
+          <h3>창의적인 작품 아이디어</h3>
+          <p>무엇을 만들지 막막할 때 레트로 게임, 대화형 애니메이션 등 다양한 엔트리 작품 아이디어를 제안받고 코딩을 시작해 보세요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="steps-section" id="how-to">
+    <div class="container">
+      <div class="section-header">
+        <h2>시작하기까지 단 <span class="grad-text">3단계</span></h2>
+        <p>복잡한 가입 절차 없이 크롬 확장 프로그램만 설치하면 바로 사용할 수 있습니다.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-badge">STEP 01</span>
+          <h4>확장 프로그램 설치</h4>
+          <p>Chrome 웹스토어에서 Nevix를 검색하고 우측 상단의 [Chrome에 추가] 버튼을 누릅니다.</p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-badge">STEP 02</span>
+          <h4>엔트리 접속하기</h4>
+          <p>엔트리(playentry.org)에 접속하면 화면 우측 하단 또는 상단에 Nevix AI 버튼이 활성화됩니다.</p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-badge">STEP 03</span>
+          <h4>질문하고 코드 적용</h4>
+          <p>원하는 기능이나 코드를 텍스트로 물어보고 곧바로 여러분의 프로젝트에 활용해 보세요!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-banner">
+    <div class="container">
+      <div class="cta-box">
+        <h2 style="font-size: 32px; font-weight: 800; margin-bottom: 16px; color: var(--text-main);">지금 바로 Nevix와 함께 스마트한 엔트리 코딩을 경험하세요</h2>
+        <p style="color: var(--text-sub); margin-bottom: 32px; font-size: 16px;">파이썬 학습과 엔트리 작품 완성이 한층 더 즐거워집니다.</p>
+        <a href="#" class="btn-primary" style="font-size: 18px; padding: 18px 42px;">무료로 Chrome에 추가하기</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-logo">
+        <img src="Nevix.png" alt="Nevix" class="footer-logo-img" onerror="this.onerror=null; this.src='icon.png';" />
+        <span>Nevix AI Assistant</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 13px;">
+        © 2026 Nevix. Designed & Powered for PlayEntry Python Learning.
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
